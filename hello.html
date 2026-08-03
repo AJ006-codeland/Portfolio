@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiet Bloom — Pressed Botanicals & Paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;1,9..144,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush: #f6e2e2;
+    --blush-deep: #e9c3c6;
+    --sage: #d3e2d3;
+    --sage-deep: #aec6b0;
+    --cream: #fbf6ef;
+    --lavender: #e6dded;
+    --plum: #4a3a45;
+    --plum-soft: #7a6570;
+    --gold-line: #c9a98c;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background: var(--cream);
+    color: var(--plum);
+    font-family: 'Jost', sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3, .display{
+    font-family:'Fraunces', serif;
+    font-weight:450;
+    letter-spacing:0.2px;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 40px;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(251,246,239,0.85);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(74,58,69,0.08);
+  }
+  nav .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:78px;
+  }
+  .logo{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:1.4rem;
+    letter-spacing:0.5px;
+  }
+  .nav-links{ display:flex; gap:38px; font-size:0.82rem; letter-spacing:1.5px; text-transform:uppercase; }
+  .nav-links a{ position:relative; padding-bottom:4px; opacity:0.75; transition:opacity .25s ease; }
+  .nav-links a:hover{ opacity:1; }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:0; width:0; height:1px;
+    background:var(--gold-line); transition:width .3s ease;
+  }
+  .nav-links a:hover::after{ width:100%; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:110px 0 90px;
+    overflow:hidden;
+  }
+  .hero .wrap{
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items:center;
+    gap:40px;
+  }
+  .eyebrow{
+    font-size:0.78rem;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--plum-soft);
+    margin-bottom:22px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .eyebrow::before{
+    content:""; width:34px; height:1px; background:var(--gold-line);
+  }
+  .hero h1{
+    font-size:clamp(2.6rem, 5vw, 4.2rem);
+    line-height:1.06;
+    max-width:9.5em;
+  }
+  .hero h1 em{
+    font-style:italic;
+    color:#b98a8f;
+  }
+  .hero p.sub{
+    margin-top:26px;
+    max-width:420px;
+    font-size:1.02rem;
+    line-height:1.75;
+    color:var(--plum-soft);
+  }
+  .hero .cta-row{
+    margin-top:38px;
+    display:flex;
+    align-items:center;
+    gap:28px;
+  }
+  .btn-primary{
+    background:var(--plum);
+    color:var(--cream);
+    padding:15px 34px;
+    border-radius:2px;
+    font-size:0.82rem;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    transition:background .3s ease, transform .3s ease;
+    display:inline-block;
+  }
+  .btn-primary:hover{ background:#6a5560; transform:translateY(-2px); }
+  .link-under{
+    font-size:0.85rem;
+    border-bottom:1px solid var(--gold-line);
+    padding-bottom:3px;
+    letter-spacing:0.5px;
+  }
+
+  /* hero illustration */
+  .hero-art{ position:relative; height:460px; }
+  .pressed-frame{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- PRESS DIVIDER (signature element) ---------- */
+  .stem-divider{
+    display:flex; align-items:center; justify-content:center;
+    padding:6px 0 70px;
+  }
+  .stem-divider svg{ width:100%; max-width:420px; height:auto; opacity:0.85; }
+
+  /* ---------- INTRO STRIP ---------- */
+  .intro{
+    padding:10px 0 90px;
+    text-align:center;
+  }
+  .intro p{
+    max-width:620px;
+    margin:0 auto;
+    font-size:1.25rem;
+    line-height:1.8;
+    font-family:'Fraunces', serif;
+    font-weight:300;
+    font-style:italic;
+    color:var(--plum-soft);
+  }
+
+  /* ---------- COLLECTION ---------- */
+  .collection{ padding:20px 0 110px; }
+  .section-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:52px;
+    flex-wrap:wrap; gap:20px;
+  }
+  .section-head h2{ font-size:2.1rem; }
+  .section-head .season{
+    font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; color:var(--plum-soft);
+  }
+
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:34px;
+  }
+  .card{
+    background:var(--cream);
+    border:1px solid rgba(74,58,69,0.08);
+    border-radius:4px;
+    padding:0 0 30px;
+    transition:transform .4s ease, box-shadow .4s ease;
+    overflow:hidden;
+  }
+  .card:hover{ transform:translateY(-6px); box-shadow:0 20px 40px rgba(74,58,69,0.08); }
+  .card-art{
+    height:230px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card-art.c1{ background:var(--blush); }
+  .card-art.c2{ background:var(--sage); }
+  .card-art.c3{ background:var(--lavender); }
+  .card-body{ padding:26px 28px 0; }
+  .card-body .tag{ font-size:0.72rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--plum-soft); }
+  .card-body h3{ font-size:1.35rem; margin:10px 0 8px; }
+  .card-body p{ font-size:0.92rem; color:var(--plum-soft); line-height:1.6; }
+  .card-body .price{ margin-top:16px; font-size:0.85rem; letter-spacing:1px; }
+
+  /* ---------- QUOTE ---------- */
+  .quote-section{
+    background:var(--blush);
+    padding:100px 0;
+    position:relative;
+  }
+  .quote-section .wrap{ max-width:760px; text-align:center; }
+  .quote-mark{ font-family:'Fraunces', serif; font-size:3.5rem; font-style:italic; color:var(--blush-deep); line-height:0; }
+  .quote-section p{
+    font-family:'Fraunces', serif;
+    font-size:1.7rem;
+    font-weight:300;
+    font-style:italic;
+    line-height:1.55;
+    margin:18px 0 26px;
+  }
+  .quote-section .attribution{
+    font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; color:var(--plum-soft);
+  }
+
+  /* ---------- RITUAL / PROCESS ---------- */
+  .process{ padding:110px 0; }
+  .process .wrap{
+    display:grid; grid-template-columns:0.9fr 1.1fr; gap:60px; align-items:center;
+  }
+  .process-steps{ display:flex; flex-direction:column; gap:34px; }
+  .step{ display:flex; gap:22px; }
+  .step-mark{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--sage-deep);
+    margin-top:10px; flex-shrink:0;
+  }
+  .step h4{ font-family:'Fraunces', serif; font-size:1.2rem; margin-bottom:6px; font-weight:450; }
+  .step p{ font-size:0.92rem; color:var(--plum-soft); line-height:1.7; max-width:380px; }
+
+  /* ---------- NEWSLETTER ---------- */
+  .newsletter{
+    background:var(--plum);
+    color:var(--cream);
+    padding:90px 0;
+    text-align:center;
+  }
+  .newsletter h2{ font-size:2.2rem; margin-bottom:16px; }
+  .newsletter p{ color:#d8c9d0; max-width:440px; margin:0 auto 34px; line-height:1.7; }
+  .form-row{
+    display:flex; justify-content:center; gap:0;
+    max-width:420px; margin:0 auto;
+    border-bottom:1px solid rgba(251,246,239,0.4);
+  }
+  .form-row input{
+    background:transparent; border:none; outline:none;
+    color:var(--cream); font-family:'Jost', sans-serif; font-size:0.95rem;
+    padding:14px 10px; flex:1;
+  }
+  .form-row input::placeholder{ color:#c7b6bf; }
+  .form-row button{
+    background:none; border:none; color:var(--cream);
+    font-size:0.78rem; letter-spacing:1.5px; text-transform:uppercase;
+    cursor:pointer; padding:14px 8px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding:60px 0 40px; }
+  footer .wrap{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:20px;
+    font-size:0.8rem; color:var(--plum-soft);
+  }
+  .foot-links{ display:flex; gap:26px; }
+
+  @media (max-width: 860px){
+    .hero .wrap{ grid-template-columns:1fr; }
+    .hero-art{ height:300px; order:-1; }
+    .cards{ grid-template-columns:1fr; }
+    .process .wrap{ grid-template-columns:1fr; }
+    .nav-links{ display:none; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; }
+  }
+
+  a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--gold-line);
+    outline-offset:3px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">Quiet Bloom</div>
+    <div class="nav-links">
+      <a href="#collection">Collection</a>
+      <a href="#process">The Ritual</a>
+      <a href="#journal">Journal</a>
+      <a href="#newsletter">Visit Us</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Small-batch botanical paper goods</div>
+      <h1>Every petal, <em>pressed</em><br>into a keepsake.</h1>
+      <p class="sub">We gather wildflowers at the edge of bloom and press them, page by page, into stationery, prints, and cards meant to be kept — not thrown away.</p>
+      <div class="cta-row">
+        <a href="#collection" class="btn-primary">Browse the Collection</a>
+        <a href="#process" class="link-under">How it's made</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="pressed-frame">
+        <svg width="360" height="440" viewBox="0 0 360 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="340" height="420" rx="2" fill="#fbf6ef" stroke="#e9c3c6" stroke-width="1.5"/>
+          <rect x="26" y="26" width="308" height="388" fill="#f6e2e2" opacity="0.5"/>
+          <!-- stem -->
+          <path d="M180 380 C 175 300, 190 220, 178 120" stroke="#aec6b0" stroke-width="2.5" fill="none"/>
+          <!-- leaves -->
+          <path d="M178 300 C 140 290, 120 260, 130 235 C 165 240, 185 265, 178 300 Z" fill="#c9dccb" stroke="#aec6b0" stroke-width="1"/>
+          <path d="M180 250 C 220 240, 245 210, 235 185 C 200 190, 178 215, 180 250 Z" fill="#d3e2d3" stroke="#aec6b0" stroke-width="1"/>
+          <!-- flower head -->
+          <g transform="translate(178,110)">
+            <ellipse cx="0" cy="-24" rx="16" ry="24" fill="#e9c3c6" opacity="0.9"/>
+            <ellipse cx="21" cy="-8" rx="16" ry="24" fill="#eecdd0" opacity="0.9" transform="rotate(60 21 -8)"/>
+            <ellipse cx="13" cy="18" rx="16" ry="24" fill="#e5bcc0" opacity="0.9" transform="rotate(120 13 18)"/>
+            <ellipse cx="-13" cy="18" rx="16" ry="24" fill="#eecdd0" opacity="0.9" transform="rotate(-120 -13 18)"/>
+            <ellipse cx="-21" cy="-8" rx="16" ry="24" fill="#e5bcc0" opacity="0.9" transform="rotate(-60 -21 -8)"/>
+            <circle cx="0" cy="0" r="9" fill="#c9a98c"/>
+          </g>
+          <text x="180" y="405" text-anchor="middle" font-family="Fraunces, serif" font-style="italic" font-size="13" fill="#7a6570">no. 04 — wild clover, late June</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stem-divider">
+  <svg viewBox="0 0 420 30" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="15" x2="420" y2="15" stroke="#c9a98c" stroke-width="1"/>
+    <path d="M180 15 C 175 5, 165 3, 158 8" stroke="#aec6b0" stroke-width="1.5" fill="none"/>
+    <path d="M240 15 C 245 25, 255 27, 262 22" stroke="#aec6b0" stroke-width="1.5" fill="none"/>
+    <circle cx="210" cy="15" r="3" fill="#e9c3c6"/>
+  </svg>
+</div>
+
+<section class="intro">
+  <div class="wrap">
+    <p>"A pressed flower is a small act of patience — a way of asking a season to stay a little longer than it meant to."</p>
+  </div>
+</section>
+
+<section class="collection" id="collection">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>The Current Collection</h2>
+      <div class="season">Summer Pressing, 2026</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-art c1">
+          <svg width="120" height="140" viewBox="0 0 120 140"><path d="M60 130 C55 90 65 60 58 30" stroke="#b98a8f" stroke-width="2" fill="none"/><ellipse cx="58" cy="28" rx="10" ry="16" fill="#e9c3c6" transform="rotate(20 58 28)"/><ellipse cx="70" cy="40" rx="10" ry="16" fill="#eecdd0" transform="rotate(100 70 40)"/><ellipse cx="46" cy="40" rx="10" ry="16" fill="#eecdd0" transform="rotate(-70 46 40)"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="tag">Correspondence</div>
+          <h3>Wild Rose Notecards</h3>
+          <p>A set of eight, each bearing one true pressed bloom under glassine, ready for a short letter.</p>
+          <div class="price">Rs 1,450 — set of 8</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-art c2">
+          <svg width="120" height="140" viewBox="0 0 120 140"><path d="M60 130 L60 40" stroke="#7a9c7f" stroke-width="2"/><path d="M60 90 C 30 85, 20 65, 30 50 C 55 55, 65 75, 60 90 Z" fill="#aec6b0"/><path d="M60 60 C 90 55, 100 35, 90 20 C 65 25, 55 45, 60 60 Z" fill="#c2d8c4"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="tag">Wall Prints</div>
+          <h3>Fern & Field Study No.2</h3>
+          <p>A framed botanical arrangement of native ferns, archival printed on cotton paper.</p>
+          <div class="price">Rs 3,200 — 12"×16"</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-art c3">
+          <svg width="120" height="140" viewBox="0 0 120 140"><rect x="30" y="30" width="60" height="80" rx="2" fill="#fbf6ef" stroke="#c9a98c"/><path d="M60 95 C55 70 65 55 58 40" stroke="#b98a8f" stroke-width="1.5" fill="none"/><ellipse cx="58" cy="38" rx="7" ry="11" fill="#e9c3c6"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="tag">Keepsake</div>
+          <h3>Pressing Journal</h3>
+          <p>Blank pages of acid-free cotton paper, bound in linen — begin your own collection.</p>
+          <div class="price">Rs 2,100 — 80 pages</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="quote-section">
+  <div class="wrap">
+    <div class="quote-mark">"</div>
+    <p>I sent a Quiet Bloom card to my grandmother, and she called just to tell me she'd put it in a frame instead of a drawer.</p>
+    <div class="attribution">— Priya M., Pokhara</div>
+  </div>
+</section>
+
+<section class="process" id="process">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">The ritual</div>
+      <h2 style="font-size:2.1rem; max-width:8em; line-height:1.2;">From meadow to mantel, slowly.</h2>
+    </div>
+    <div class="process-steps">
+      <div class="step">
+        <div class="step-mark"></div>
+        <div>
+          <h4>Gathered at dawn</h4>
+          <p>Flowers are cut in the early morning, when the petals hold the most moisture and colour.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-mark"></div>
+        <div>
+          <h4>Pressed for three weeks</h4>
+          <p>Layered between cotton sheets in wooden presses, changed weekly to hold their hue.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-mark"></div>
+        <div>
+          <h4>Set by hand</h4>
+          <p>Each piece is arranged and sealed individually — no two cards are ever quite the same.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="newsletter" id="newsletter">
+  <div class="wrap">
+    <h2>Join the Pressing List</h2>
+    <p>A quiet, occasional note when a new season's collection is ready — nothing more.</p>
+    <div class="form-row">
+      <input type="email" placeholder="your email address" aria-label="Email address">
+      <button type="button">Subscribe</button>
+    </div>
+  </div>
+</section>
+
+<footer id="journal">
+  <div class="wrap">
+    <div>Quiet Bloom, Kathmandu — pressed with care since 2023</div>
+    <div class="foot-links">
+      <a href="#">Instagram</a>
+      <a href="#">Pinterest</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
