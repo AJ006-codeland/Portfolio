@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>a question for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#ff8fae;
+    --sky-mid:#ffb3c6;
+    --sky-bottom:#ffd9e3;
+    --hill-far:#f7a8bf;
+    --hill-near:#ef7d9e;
+    --grass:#e85c86;
+    --card-border:#e8547a;
+    --card-border-dark:#c93b5f;
+    --ink:#3d2436;
+    --ink-soft:#6b4a58;
+    --cream:#fff6ef;
+    --gold:#f4c95d;
+  }
+  *{box-sizing:border-box; image-rendering:pixelated;}
+  html,body{margin:0;padding:0;width:100%;height:100%;overflow-x:hidden;}
+  body{
+    font-family:'VT323', monospace;
+    color:var(--ink);
+    min-height:100vh;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 45%,var(--sky-bottom) 75%);
+  }
+  .pixel-font{ font-family:'Press Start 2P', monospace; image-rendering:auto; }
+
+  /* ---------- background scenery (fixed) ---------- */
+  .scene{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  .stars{ position:absolute; inset:0; background-image:
+      radial-gradient(2px 2px at 10% 15%, #fff 0, transparent 60%),
+      radial-gradient(2px 2px at 80% 10%, #fff 0, transparent 60%),
+      radial-gradient(2px 2px at 60% 25%, #fff 0, transparent 60%),
+      radial-gradient(2px 2px at 30% 8%, #fff 0, transparent 60%),
+      radial-gradient(2px 2px at 92% 30%, #fff 0, transparent 60%);
+      opacity:0.7;
+  }
+  .cloud{ position:absolute; background:#fff; opacity:0.85; }
+  .cloud::before, .cloud::after{ content:""; position:absolute; background:#fff; }
+  .cloud1{ width:64px; height:16px; top:8%; left:8%; }
+  .cloud1::before{ width:24px; height:24px; top:-12px; left:8px; }
+  .cloud1::after{ width:32px; height:16px; top:-8px; left:28px; }
+  .cloud2{ width:48px; height:12px; top:14%; right:10%; }
+  .cloud2::before{ width:20px; height:20px; top:-10px; left:6px; }
+  .cloud2::after{ width:24px; height:12px; top:-6px; left:22px; }
+  .cloud3{ width:40px; height:10px; top:6%; right:32%; opacity:0.6;}
+  .cloud3::before{ width:16px; height:16px; top:-8px; left:6px; }
+
+  .skyline{ position:absolute; bottom:14%; left:0; right:0; height:120px; opacity:0.55; }
+  .skyline .bldg{ position:absolute; bottom:0; background:var(--hill-far); }
+
+  .hill{ position:absolute; bottom:7%; left:0; right:0; height:130px; background:var(--hill-near); border-radius:50% 50% 0 0 / 100% 100% 0 0; opacity:0.9;}
+  .grass{ position:absolute; bottom:0; left:0; right:0; height:7%; background:var(--grass); }
+  .grass::before{ content:""; position:absolute; inset:0; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0 4px, transparent 4px 10px); }
+
+  .sparkle{ position:absolute; color:#fff; opacity:0.8; font-size:14px; animation:twinkle 2.4s ease-in-out infinite; }
+  @keyframes twinkle{ 0%,100%{opacity:0.2; transform:scale(0.8);} 50%{opacity:0.9; transform:scale(1.1);} }
+
+  /* ---------- layout ---------- */
+  .app{ position:relative; z-index:1; width:100%; max-width:520px; padding:28px 20px; text-align:center; }
+  .screen{ display:none; animation:fadeUp 0.45s ease; }
+  .screen.active{ display:block; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  /* pixel-frame card for sprite */
+  .sprite-frame{
+    width:150px; height:150px; margin:0 auto 22px;
+    background:var(--cream);
+    border:4px solid var(--card-border);
+    box-shadow:
+      0 0 0 3px var(--cream) inset,
+      0 0 0 6px var(--card-border-dark);
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    clip-path:polygon(
+      12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px),
+      calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px
+    );
+  }
+  .sprite-frame canvas{ width:120px; height:120px; }
+  .sprite-frame .corner{ position:absolute; width:10px; height:10px; background:var(--gold); }
+  .sprite-frame .corner.tl{ top:-2px; left:-2px; } .sprite-frame .corner.tr{ top:-2px; right:-2px; }
+  .sprite-frame .corner.bl{ bottom:-2px; left:-2px; } .sprite-frame .corner.br{ bottom:-2px; right:-2px; }
+
+  h1.headline{
+    font-family:'Press Start 2P', monospace;
+    font-size:clamp(1.1rem, 5.6vw, 1.55rem);
+    line-height:1.7;
+    color:var(--card-border-dark);
+    margin:0 0 10px;
+    text-shadow:2px 2px 0 rgba(255,255,255,0.5);
+  }
+  p.sub{ font-size:1.25rem; color:var(--ink-soft); margin:0 0 26px; }
+
+  /* pixel buttons */
+  .pixel-btn{
+    font-family:'VT323', monospace;
+    font-size:1.35rem;
+    font-weight:700;
+    letter-spacing:0.03em;
+    padding:14px 30px;
+    border:3px solid var(--card-border-dark);
+    background:var(--cream);
+    color:var(--card-border-dark);
+    cursor:pointer;
+    box-shadow:4px 4px 0 var(--card-border-dark);
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .pixel-btn:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--card-border-dark); }
+  .pixel-btn.primary{
+    background:var(--card-border);
+    color:#fff;
+    box-shadow:4px 4px 0 var(--card-border-dark);
+  }
+  .pixel-btn.primary:hover{ background:var(--card-border-dark); }
+  .pixel-btn.wide{ width:100%; margin-top:10px; }
+  .pixel-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+  .btn-row{ position:relative; min-height:150px; display:flex; align-items:center; justify-content:center; gap:18px; }
+  #noBtn{ position:relative; }
+  #noBtn.fleeing{ position:fixed; }
+  #yesBtn{ transform:scale(var(--yes-scale,1)); }
+
+  .hint{ margin-top:22px; font-size:1.15rem; color:var(--card-border-dark); min-height:24px; }
+
+  /* date screen */
+  input[type="date"]{
+    font-family:'VT323', monospace;
+    font-size:1.3rem;
+    padding:12px 16px;
+    border:3px solid var(--card-border-dark);
+    background:var(--cream);
+    color:var(--ink);
+    width:100%;
+    max-width:280px;
+    text-align:center;
+  }
+
+  /* activity grid */
+  .activity-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .activity-opt{
+    font-family:'VT323', monospace;
+    font-size:1.15rem;
+    padding:16px 8px;
+    border:3px solid var(--card-border-dark);
+    background:var(--cream);
+    color:var(--ink);
+    cursor:pointer;
+    transition:background 0.15s, transform 0.1s;
+  }
+  .activity-opt:hover{ background:#ffe3eb; }
+  .activity-opt.selected{
+    background:var(--card-border);
+    color:#fff;
+    transform:scale(1.03);
+    box-shadow:3px 3px 0 var(--card-border-dark);
+  }
+
+  /* final summary card */
+  .summary-card{
+    background:var(--cream);
+    border:3px solid var(--card-border-dark);
+    padding:18px 20px;
+    margin:0 auto 26px;
+    max-width:320px;
+    font-size:1.25rem;
+    line-height:2;
+  }
+  .summary-card .label{ color:var(--card-border-dark); font-weight:700; }
+
+  footer.credit{
+    position:fixed; bottom:10px; left:0; right:0; text-align:center;
+    font-size:0.9rem; color:rgba(61,36,54,0.45); z-index:1;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .sparkle{ animation:none; }
+    .screen{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="stars"></div>
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="cloud cloud3"></div>
+  <div class="skyline" id="skyline"></div>
+  <div class="hill"></div>
+  <div class="grass"></div>
+  <div class="sparkle" style="top:20%;left:15%;">✦</div>
+  <div class="sparkle" style="top:32%;left:80%;animation-delay:0.6s;">✦</div>
+  <div class="sparkle" style="top:50%;left:6%;animation-delay:1.2s;">✧</div>
+  <div class="sparkle" style="top:60%;left:90%;animation-delay:1.8s;">✧</div>
+</div>
+
+<div class="app">
+
+  <!-- SCREEN 1 : ASK -->
+  <section class="screen active" id="screen-ask">
+    <div class="sprite-frame">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <canvas id="canvas-ask" width="20" height="20"></canvas>
+    </div>
+    <h1 class="headline" id="askHeadline">Will you go<br>out with me?</h1>
+    <div class="btn-row">
+      <button class="pixel-btn primary" id="yesBtn" onclick="goTo('screen-yay')">YES ✦</button>
+      <button class="pixel-btn" id="noBtn">No</button>
+    </div>
+    <div class="hint" id="hint"></div>
+  </section>
+
+  <!-- SCREEN 2 : YAY -->
+  <section class="screen" id="screen-yay">
+    <div class="sprite-frame">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <canvas id="canvas-yay" width="20" height="20"></canvas>
+    </div>
+    <h1 class="headline">YAY! 💗</h1>
+    <p class="sub" id="yayText">I'm so glad u said yes.</p>
+    <button class="pixel-btn primary wide" style="max-width:280px" onclick="goTo('screen-date')">PRESS TO CONTINUE →</button>
+  </section>
+
+  <!-- SCREEN 3 : PICK A DATE -->
+  <section class="screen" id="screen-date">
+    <div class="sprite-frame">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <canvas id="canvas-date" width="20" height="20"></canvas>
+    </div>
+    <h1 class="headline">PICK A DATE</h1>
+    <p class="sub">Choose the day for our cute little plan.</p>
+    <input type="date" id="dateInput">
+    <br>
+    <button class="pixel-btn primary wide" style="max-width:280px" onclick="confirmDate()">CONTINUE →</button>
+  </section>
+
+  <!-- SCREEN 4 : ACTIVITY -->
+  <section class="screen" id="screen-activity">
+    <div class="sprite-frame">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <canvas id="canvas-activity" width="20" height="20"></canvas>
+    </div>
+    <h1 class="headline">WHAT WOULD<br>YOU LIKE TO DO?</h1>
+    <div class="activity-grid" id="activityGrid">
+      <button class="activity-opt" data-val="Dinner Date">DINNER DATE</button>
+      <button class="activity-opt" data-val="Movie Night">MOVIE NIGHT</button>
+      <button class="activity-opt" data-val="Coffee &amp; Walk">COFFEE &amp; WALK</button>
+      <button class="activity-opt" data-val="Picnic">PICNIC</button>
+      <button class="activity-opt" data-val="Mini Golf">MINI GOLF</button>
+      <button class="activity-opt" data-val="Surprise Me">SURPRISE ME</button>
+    </div>
+    <button class="pixel-btn primary wide" style="max-width:280px" id="lockInBtn" disabled onclick="goTo('screen-final')">LOCK IT IN 🔒</button>
+  </section>
+
+  <!-- SCREEN 5 : FINAL -->
+  <section class="screen" id="screen-final">
+    <div class="sprite-frame">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <canvas id="canvas-final" width="20" height="20"></canvas>
+    </div>
+    <h1 class="headline">IT'S A DATE! 💕</h1>
+    <div class="summary-card">
+      <div><span class="label">DATE:</span> <span id="finalDate">—</span></div>
+      <div><span class="label">ACTIVITY:</span> <span id="finalActivity">—</span></div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="credit">made with 💗</footer>
+
+<script>
+/* ============================================================
+   CUSTOMIZE ME
+   ============================================================ */
+const CONFIG = {
+  question: "Will you go\nout with me?",
+  yayText: "I'm so glad u said yes.",
+};
+document.getElementById('askHeadline').innerHTML = CONFIG.question.replace('\n','<br>');
+document.getElementById('yayText').textContent = CONFIG.yayText;
+
+/* ============================================================
+   Pixel sprite renderer
+   ============================================================ */
+const SPRITES = {"neutral": [[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, "#3D2436", null, "#3D2436", null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null], [null, null, null, null, "#3D2436", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#3D2436", "#3D2436", "#3D2436", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]], "worried": [[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, "#3D2436", null, "#3D2436", null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#BEE3F8", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null], [null, null, null, null, "#3D2436", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#3D2436", "#3D2436", "#3D2436", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]], "heartbroken": [[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, "#3D2436", null, "#3D2436", null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", null, null], [null, null, null, null, "#3D2436", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#3D2436", "#3D2436", "#3D2436", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]], "happy": [[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, "#3D2436", null, "#3D2436", null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null], [null, null, null, null, "#3D2436", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FF9FBB", "#FF9FBB", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#3D2436", "#3D2436", "#3D2436", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]], "shy": [[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, "#3D2436", null, "#3D2436", null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#3D2436", "#FFFFFF", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFB6C9", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FF9FBB", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null], [null, null, null, null, null, "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", null, null, null, null], [null, null, null, null, null, null, "#3D2436", "#3D2436", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#3D2436", "#3D2436", null, null, null, null, null], [null, null, null, null, null, null, null, null, "#3D2436", "#3D2436", "#3D2436", "#3D2436", "#3D2436", null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]]};
+
+function drawSprite(canvasId, name){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const grid = SPRITES[name];
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0,0,20,20);
+  for(let y=0;y<20;y++){
+    for(let x=0;x<20;x++){
+      const c = grid[y][x];
+      if(c){ ctx.fillStyle = c; ctx.fillRect(x,y,1,1); }
+    }
+  }
+}
+
+drawSprite('canvas-ask','neutral');
+drawSprite('canvas-yay','happy');
+drawSprite('canvas-date','shy');
+drawSprite('canvas-activity','happy');
+drawSprite('canvas-final','happy');
+
+/* ============================================================
+   Screen navigation
+   ============================================================ */
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ============================================================
+   "No" button dodge logic + expression changes
+   ============================================================ */
+const noBtn = document.getElementById('noBtn');
+const yesBtn = document.getElementById('yesBtn');
+const hint = document.getElementById('hint');
+
+const stages = [
+  { hint: "Are you sure?", sprite: "neutral" },
+  { hint: "Babe please :(", sprite: "worried" },
+  { hint: "Heart broken </3", sprite: "worried" },
+  { hint: "okay you're really trying huh", sprite: "heartbroken" },
+  { hint: "at this point just say yes 😌", sprite: "heartbroken" },
+  { hint: "the 'no' button has given up trying to be subtle", sprite: "heartbroken" },
+];
+let dodgeCount = 0;
+
+function moveNoButton(){
+  const rect = noBtn.getBoundingClientRect();
+  const margin = 20;
+  const maxX = window.innerWidth - rect.width - margin;
+  const maxY = window.innerHeight - rect.height - margin;
+  const newX = Math.random() * Math.max(maxX - margin, 100) + margin;
+  const newY = Math.random() * Math.max(maxY - margin, 100) + margin;
+
+  noBtn.classList.add('fleeing');
+  noBtn.style.left = newX + 'px';
+  noBtn.style.top = newY + 'px';
+
+  dodgeCount = Math.min(dodgeCount + 1, stages.length - 1);
+  const stage = stages[dodgeCount];
+  hint.textContent = stage.hint;
+  drawSprite('canvas-ask', stage.sprite);
+
+  const shrink = Math.max(1 - dodgeCount * 0.08, 0.55);
+  noBtn.style.transform = `scale(${shrink}) rotate(${(Math.random()*16)-8}deg)`;
+  yesBtn.style.setProperty('--yes-scale', Math.min(1 + dodgeCount * 0.06, 1.4));
+}
+
+noBtn.addEventListener('mouseenter', moveNoButton);
+noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton(); }, { passive:false });
+noBtn.addEventListener('click', (e) => { e.preventDefault(); moveNoButton(); });
+
+/* ============================================================
+   Date screen
+   ============================================================ */
+let chosenDate = null;
+function confirmDate(){
+  const val = document.getElementById('dateInput').value;
+  if(!val){ alert("pick a date first! 🥺"); return; }
+  const d = new Date(val + 'T00:00:00');
+  chosenDate = d.toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric', year:'numeric' });
+  goTo('screen-activity');
+}
+
+/* ============================================================
+   Activity screen
+   ============================================================ */
+let chosenActivity = null;
+document.querySelectorAll('.activity-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.activity-opt').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    chosenActivity = btn.dataset.val;
+    document.getElementById('lockInBtn').disabled = false;
+  });
+});
+
+/* ============================================================
+   Final screen
+   ============================================================ */
+document.getElementById('lockInBtn').addEventListener('click', () => {
+  document.getElementById('finalDate').textContent = chosenDate || '—';
+  document.getElementById('finalActivity').textContent = chosenActivity || '—';
+});
+
+/* ============================================================
+   Decorative pixel skyline (randomized once)
+   ============================================================ */
+const skyline = document.getElementById('skyline');
+let left = 0;
+while(left < window.innerWidth + 40){
+  const w = 30 + Math.random()*40;
+  const h = 40 + Math.random()*80;
+  const b = document.createElement('div');
+  b.className = 'bldg';
+  b.style.left = left + 'px';
+  b.style.width = w + 'px';
+  b.style.height = h + 'px';
+  skyline.appendChild(b);
+  left += w + 6;
+}
+</script>
+</body>
+</html>
